@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教材巡迴展 - 老師專屬闖關集點卡</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #50E3C2;
+            --accent-color: #F5A623;
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #2C3E50;
+            --text-sub: #7F8C8D;
+            --border-radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding-bottom: 40px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #3A7BD5 0%, #3A6073 100%);
+            color: white;
+            padding: 24px 20px 36px;
+            text-align: center;
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+
+        header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .progress-card {
+            background: var(--card-bg);
+            margin-top: -24px;
+            border-radius: var(--border-radius);
+            padding: 16px 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .progress-info {
+            flex-grow: 1;
+            margin-right: 15px;
+        }
+
+        .progress-bar-bg {
+            background: #E9ECEF;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .redeem-btn {
+            background: #CCCCCC;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+        }
+
+        .redeem-btn.active {
+            background: var(--accent-color);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(245, 166, 35, 0.4);
+            animation: pulse 1.5s infinite;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            margin: 20px 0 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 16px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #EFEFEF;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .card-tag {
+            font-size: 0.7rem;
+            color: var(--primary-color);
+            background: rgba(74, 144, 226, 0.1);
+            padding: 2px 6px;
+            border-radius: 8px;
+            width: fit-content;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .card h3 {
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .card p {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            line-height: 1.2;
+            margin-bottom: 10px;
+        }
+
+        .stamp-box {
+            height: 60px;
+            border: 2px dashed #E0E0E0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FAFAFA;
+        }
+
+        .stamp-box.stamped {
+            border-style: solid;
+            border-color: var(--secondary-color);
+            background: rgba(80, 227, 194, 0.08);
+        }
+
+        .stamp-mark {
+            width: 44px;
+            height: 44px;
+            border: 2px solid #E74C3C;
+            border-radius: 50%;
+            color: #E74C3C;
+            font-weight: bold;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-15deg) scale(0);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            user-select: none;
+        }
+
+        .stamp-box.stamped .stamp-mark {
+            transform: rotate(-15deg) scale(1);
+            opacity: 1;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 18px;
+            padding: 24px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .modal h2 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .modal p {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            margin-bottom: 16px;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 4px;
+            border: 2px solid #DDD;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            outline: none;
+        }
+
+        .password-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #EFEFEF;
+            color: var(--text-main);
+        }
+
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: #F0F0F0;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #888;
+            border: 2px dashed #DDD;
+        }
+
+        .reset-link {
+            display: block;
+            margin-top: 24px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #AAA;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>2026 全新領域教材展示會</h1>
+        <p>探索創新教學資源 • 集滿 8 關領取好禮</p>
+    </header>
+
+    <div class="container">
+        <!-- 進度條 -->
+        <div class="progress-card">
+            <div class="progress-info">
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600;">
+                    <span>闖關進度</span>
+                    <span id="progress-text">0 / 8</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+            </div>
+            <button class="redeem-btn" id="redeem-btn" onclick="openRedeemModal()">兌換好禮</button>
+        </div>
+
+        <!-- 8 個關卡卡片 -->
+        <div class="section-title">關卡體驗區</div>
+        <div class="grid" id="card-grid"></div>
+
+        <span class="reset-link" onclick="resetStamps()">重置集點進度（僅供測試）</span>
+    </div>
+
+    <!-- 密碼輸入彈窗 -->
+    <div class="modal-overlay" id="pw-modal">
+        <div class="modal">
+            <h2 id="pw-modal-title">關卡驗證</h2>
+            <p>請由現場工作人員輸入關卡密碼完成蓋章：</p>
+            <input type="number" id="pw-input" class="password-input" placeholder="0000" pattern="\d*" inputmode="numeric">
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="closePwModal()">取消</button>
+                <button class="btn btn-primary" onclick="verifyPassword()">確認蓋章</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 兌獎彈窗 -->
+    <div class="modal-overlay" id="redeem-modal">
+        <div class="modal">
+            <h2>🎉 恭喜完成全區 8 關體驗！</h2>
+            <p>請向服務台工作人員出示此畫面領取選書精美禮品。</p>
+            <div class="qr-placeholder">
+                [ 兌獎憑證 ]<br>#2026-TEACHER-888
+            </div>
+            <button class="btn btn-secondary" style="width: 100%;" onclick="closeRedeemModal()">關閉畫面</button>
+        </div>
+    </div>
+
+    <script>
+        // 8 個關卡的資料與對應密碼（可自行修改標題與密碼）
+        const zones = [
+            { title: "審定本教科書", tag: "教科書", desc: "瀏覽最新課綱編排特色", pw: "101" },
+            { title: "非審定本教材", tag: "補充教材", desc: "探索彈性課程專用教材", pw: "102" },
+            { title: "觸控電子書", tag: "數位資源", desc: "體驗大尺寸螢幕互動教學", pw: "201" },
+            { title: "備課大師系統", tag: "數位資源", desc: "試用快速出題與備課工具", pw: "202" },
+            { title: "課堂實體教具", tag: "實體教具", desc: "操作小組互動教具模組", pw: "301" },
+            { title: "教學輔具展示", tag: "實體教具", desc: "查看各年級專用教學配件", pw: "302" },
+            { title: "選書專屬好禮", tag: "行銷優惠", desc: "了解本學期選書獎勵方案", pw: "401" },
+            { title: "售後服務諮詢", tag: "服務支援", desc: "諮詢研習與到校服務資訊", pw: "402" }
+        ];
+
+        let currentSelectIndex = null;
+        // 從 LocalStorage 載入紀錄，若無紀錄則建立長度為 8 的 false 陣列
+        let stampedState = JSON.parse(localStorage.getItem('teacher_stamp_state')) || new Array(zones.length).fill(false);
+
+        // 初始化渲染卡片
+        function renderCards() {
+            const grid = document.getElementById('card-grid');
+            grid.innerHTML = '';
+
+            zones.forEach((zone, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.onclick = () => openPwModal(i);
+
+                const isStamped = stampedState[i];
+
+                card.innerHTML = `
+                    <div>
+                        <div class="card-tag">${zone.tag}</div>
+                        <h3>${i + 1}. ${zone.title}</h3>
+                        <p>${zone.desc}</p>
+                    </div>
+                    <div class="stamp-box ${isStamped ? 'stamped' : ''}">
+                        <div class="stamp-mark">已驗證</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            updateUI();
+        }
+
+        // 開啟密碼彈窗
+        function openPwModal(index) {
+            if (stampedState[index]) return; // 若已蓋章則無需再次蓋章
+            currentSelectIndex = index;
+            document.getElementById('pw-modal-title').innerText = `${index + 1}. ${zones[index].title}`;
+            document.getElementById('pw-input').value = '';
+            document.getElementById('pw-modal').classList.add('active');
+            setTimeout(() => document.getElementById('pw-input').focus(), 100);
+        }
+
+        function closePwModal() {
+            document.getElementById('pw-modal').classList.remove('active');
+            currentSelectIndex = null;
+        }
+
+        // 驗證關卡密碼
+        function verifyPassword() {
+            const inputPw = document.getElementById('pw-input').value.trim();
+            const correctPw = zones[currentSelectIndex].pw;
+
+            if (inputPw === correctPw) {
+                stampedState[currentSelectIndex] = true;
+                // 將狀態即時寫入 LocalStorage，避免切換分頁或滑掉時資料遺失
+                localStorage.setItem('teacher_stamp_state', JSON.stringify(stampedState));
+                closePwModal();
+                renderCards();
+            } else {
+                alert("密碼錯誤，請重新詢問現場工作人員！");
+                document.getElementById('pw-input').value = '';
+            }
+        }
+
+        // 更新進度條與兌獎按鈕
+        function updateUI() {
+            const count = stampedState.filter(Boolean).length;
+            const total = zones.length;
+
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+            const btn = document.getElementById('redeem-btn');
+
+            fill.style.width = `${(count / total) * 100}%`;
+            text.innerText = `${count} / ${total}`;
+
+            if (count === total) {
+                btn.classList.add('active');
+                btn.removeAttribute('disabled');
+            } else {
+                btn.classList.remove('active');
+            }
+        }
+
+        function openRedeemModal() {
+            const btn = document.getElementById('redeem-btn');
+            if (btn.classList.contains('active')) {
+                document.getElementById('redeem-modal').classList.add('active');
+            }
+        }
+
+        function closeRedeemModal() {
+            document.getElementById('redeem-modal').classList.remove('active');
+        }
+
+        // 供測試或活動重置用
+        function resetStamps() {
+            if (confirm("確定要重置所有蓋章進度嗎？")) {
+                localStorage.removeItem('teacher_stamp_state');
+                stampedState = new Array(zones.length).fill(false);
+                renderCards();
+            }
+        }
+
+        // 頁面載入時執行初始化
+        renderCards();
+    </script>
+</body>
+</html>
